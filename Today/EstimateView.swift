@@ -10,7 +10,6 @@ struct EstimateView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // --- ✨ [앱 상단 프로필 헤더] ---
                 HStack(spacing: 15) {
                     Text(settings.profileEmoji)
                         .font(.system(size: 40))
@@ -68,7 +67,6 @@ struct EstimateView: View {
         }
     }
 
-    // --- [🎨 공유용 견적서 디자인 가상 뷰] ---
     var estimateCard: some View {
         VStack(alignment: .leading, spacing: 25) {
             HStack {
