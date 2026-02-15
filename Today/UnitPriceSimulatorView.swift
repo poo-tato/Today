@@ -4,10 +4,9 @@ struct UnitPriceSimulatorView: View {
     @EnvironmentObject var settings: SettingsManager
     let items: [LedgerItem]
     
-    // 1. 데이터 가공 로직
     private var processedIncomes: [LedgerItem] {
-        // let filtered = items.filter { !$0.isExpense } // 이 줄을 아래처럼 변경!
-        let filtered = items // 지출/수입 구분 없이 전부 다 가져오기
+        // let filtered = items.filter { !$0.isExpense } 
+        let filtered = items 
         return filtered.sorted { $0.amount > $1.amount }
     }
     private var totalIncome: Int {
@@ -54,15 +53,14 @@ struct UnitPriceSimulatorView: View {
     private var uiOverlayLayer: some View {
         VStack {
             VStack(spacing: 8) {
-                // ✅ letterSpacing을 tracking으로 수정
                 Text("FINANCIAL UNIVERSE")
                     .font(.system(size: 12, weight: .black, design: .monospaced))
                     .tracking(5)
-                    .foregroundColor(Color.white.opacity(0.6)) // ✅ Color 명시
+                    .foregroundColor(Color.white.opacity(0.6)) 
                 
                 Text("\(totalIncome)원")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundColor(Color.white) // ✅ Color 명시
+                    .foregroundColor(Color.white) 
             }
             .padding(.top, 60)
             
@@ -70,13 +68,12 @@ struct UnitPriceSimulatorView: View {
             
             Text("궤도를 도는 행성들은 당신의 수익입니다.")
                 .font(.caption)
-                .foregroundColor(Color.white.opacity(0.4)) // ✅ Color 명시
+                .foregroundColor(Color.white.opacity(0.4)) 
                 .padding(.bottom, 30)
         }
     }
 }
 
-// --- Subviews ---
 
 struct StarFieldView: View {
     var body: some View {
