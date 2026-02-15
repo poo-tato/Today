@@ -2,22 +2,19 @@ import SwiftUI
 
 struct WorkAnalysisView: View {
     @State private var items: [LedgerItem] = []
-    
-    // 1. 작업 종류별(카테고리별) 시급 분석 로직
-    var categoryStats: [CategoryStat] {
+        var categoryStats: [CategoryStat] {
         let grouped = Dictionary(grouping: items) { $0.category ?? "미분류" }
         return grouped.map { (key, value) in
             let totalAmount = value.reduce(0) { $0 + $1.amount }
             let totalHours = value.compactMap { $0.workHours }.reduce(0, +)
             let avgRate = totalHours > 0 ? Int(Double(totalAmount) / totalHours) : 0
             return CategoryStat(name: key, totalAmount: totalAmount, avgHourlyRate: avgRate, count: value.count)
-        }.sorted { $0.avgHourlyRate > $1.avgHourlyRate } // 시급 높은 순 정렬
+        }.sorted { $0.avgHourlyRate > $1.avgHourlyRate }
     }
 
     var body: some View {
         NavigationView {
             List {
-                // 상단 요약 섹션
                 Section(header: Text("전체 효율 리포트").font(.caption)) {
                     HStack {
                         VStack(alignment: .leading) {
@@ -38,11 +35,9 @@ struct WorkAnalysisView: View {
                     .padding(.vertical, 10)
                 }
 
-                // 🌟 작업 종류별 상세 리스트
                 Section(header: Text("작업 종류별 가성비 순위").font(.caption)) {
                     ForEach(categoryStats, id: \.name) { stat in
                         HStack(spacing: 15) {
-                            // 시급에 따른 아이콘 컬러
                             Circle()
                                 .fill(colorForRate(stat.avgHourlyRate))
                                 .frame(width: 10, height: 10)
@@ -68,7 +63,6 @@ struct WorkAnalysisView: View {
                     }
                 }
                 
-                // 💡 준성님을 위한 전략적 조언
                 Section(header: Text("AI 전략 제안").font(.caption)) {
                     Text(strategyComment)
                         .font(.system(size: 14))
@@ -81,7 +75,6 @@ struct WorkAnalysisView: View {
         }
     }
 
-    // --- 데이터 가공용 보조 로직 ---
     
     var overallAvgRate: Int {
         let totalAmount = items.reduce(0) { $0 + $1.amount }
@@ -104,12 +97,10 @@ struct WorkAnalysisView: View {
     }
     
     func loadData() {
-            // 장부 뷰에서 사용하는 것과 동일한 App Group 저장소 이름을 사용해야 합니다.
             let sharedSuite = UserDefaults(suiteName: "group.com.junseong.today")
             
             if let d = sharedSuite?.data(forKey: "l_db"),
                let decodedItems = try? JSONDecoder().decode([LedgerItem].self, from: d) {
-                // 가져온 데이터를 items 변수에 쏙 넣어줍니다.
                 self.items = decodedItems
             }
         }
