@@ -2,28 +2,25 @@ import SwiftUI
 import Combine
 import WidgetKit
 
-// --- [1. 모델] ---
 struct LedgerItem: Identifiable, Codable {
     var id = UUID()
     var title: String
     var channel: String
     var amount: Int
     var date: Date
-    var category: String?    // 작업 종류 (예: "봇 개발", "서버 세팅")
+    var category: String?    
         var workHours: Double?
-    var isExpense: Bool // ✨ 추가: true면 지출, false면 수입
+    var isExpense: Bool 
 }
 
 
-// --- [2. 설정 관리자] ---
 import SwiftUI
 import Combine
 
 class SettingsManager: ObservableObject {
     static let shared = SettingsManager()
     let sharedSuite = UserDefaults(suiteName: "group.com.junseong.today")
-    @Published var themeColor: Color = Color.mintBackground // 기본색 설정
-    // --- [사용자 정보] ---
+    @Published var themeColor: Color = Color.mintBackground
     @Published var userName: String {
         didSet { sharedSuite?.set(userName, forKey: "user_name") }
     }
@@ -37,8 +34,6 @@ class SettingsManager: ObservableObject {
         didSet { sharedSuite?.set(profileEmoji, forKey: "profile_emoji") }
     }
 
-    // --- [앱 상태 및 설정] ---
-    // ✅ 148, 186번 에러 해결: @Published가 붙어야 UI에서 $settings.selectedMonth로 사용 가능합니다.
     @Published var selectedMonth: Date = Date()
 
     @Published var animationType: Int {
@@ -53,8 +48,6 @@ class SettingsManager: ObservableObject {
         self.animationType = sharedSuite?.integer(forKey: "animation_type") ?? 0
     }
 
-    // ✅ 230번 에러 해결: 연산 프로퍼티입니다.
-    // 사용할 때 뷰에서 $settings.currentAnimation (X) -> settings.currentAnimation (O) 로 호출하세요.
     var currentAnimation: Animation {
         switch animationType {
         case 1:
@@ -66,14 +59,12 @@ class SettingsManager: ObservableObject {
         }
     }
 
-    // --- [데이터 저장 함수들] ---
     func saveUserName(_ name: String) { self.userName = name }
     func saveAccount(_ account: String) { self.myAccount = account }
     func saveGoal(_ goal: String) { self.monthlyGoal = goal }
     func saveAnimation(_ type: Int) { self.animationType = type }
     func saveEmoji(_ emoji: String) { self.profileEmoji = emoji }
 }
-// --- [3. 유틸리티] ---
 extension Color {
     static let mintBackground = Color(red: 0.73, green: 0.89, blue: 0.86)
     static let softGray = Color(white: 0.95)
@@ -85,7 +76,6 @@ func formatCurrency(_ value: Int) -> String {
     return (formatter.string(from: NSNumber(value: value)) ?? "\(value)") + "원"
 }
 
-// --- [4. 앱 메인] ---
 @main
 struct TodayLedgerApp: App {
     @StateObject private var settings = SettingsManager.shared
@@ -103,7 +93,6 @@ struct MainTabView: View {
     var body: some View {
         Group {
             if security.isUnlocked {
-                // 인증 성공 시 보여줄 원래 화면
                 TabView {
                     LedgerView()
                         .tabItem { Label("장부", systemImage: "dollarsign.circle.fill") }
@@ -114,7 +103,6 @@ struct MainTabView: View {
                 }
                 .accentColor(.black)
             } else {
-                // 인증 전 보여줄 화면 (잠금 화면)
                 VStack(spacing: 20) {
                     Image(systemName: "lock.fill")
                         .font(.system(size: 50))
@@ -130,34 +118,30 @@ struct MainTabView: View {
                     .cornerRadius(10)
                 }
                 .onAppear {
-                    security.authenticate() // 앱 켜지자마자 인증 팝업 띄우기
+                    security.authenticate()
                 }
             }
         }
     }
 }
 
-// --- [5. 목표 달성 프로그레스 바 (신규!)] ---
 struct GoalProgressBar: View {
     @EnvironmentObject var settings: SettingsManager
-    let totalIncome: Int   // 이번 달 번 돈 (+)
-    let totalExpense: Int  // 이번 달 쓴 돈 (+) -> 양수로 넣어주세요
+    let totalIncome: Int   
+    let totalExpense: Int  
     let goal: Int
     
-    // 🌟 여기서 직접 순수익을 계산하면 절대 안 틀립니다.
     var netProfit: Int {
         totalIncome - totalExpense
     }
     
     var percentage: Double {
         guard goal > 0 else { return 0 }
-        // 목표 달성률은 순수익 기준
         return Double(netProfit) / Double(goal)
     }
     
     var body: some View {
         VStack(spacing: 12) {
-            // 상단 퍼센트 표시
             HStack {
                 Text(percentage >= 1.0 ? "목표 달성 완료! 🔥" : "목표까지 \(max(0, Int((1.0 - percentage) * 100)))% 남았어요")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -166,13 +150,12 @@ struct GoalProgressBar: View {
                     .font(.system(size: 13, weight: .black, design: .rounded))
             }
             
-            // 프로그레스 바
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.05)).frame(height: 12)
                     
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(netProfit < 0 ? Color.red : settings.themeColor) // 적자면 빨간색
+                        .fill(netProfit < 0 ? Color.red : settings.themeColor) 
                         .frame(width: min(max(0, geo.size.width * CGFloat(percentage)), geo.size.width), height: 12)
                         .animation(.spring(), value: percentage)
                 }
@@ -181,7 +164,6 @@ struct GoalProgressBar: View {
             
             Divider().opacity(0.5)
             
-            // 수치 요약
             HStack(spacing: 0) {
                 summaryColumn(title: "총 수입", value: totalIncome, color: settings.themeColor, prefix: "+")
                 summaryColumn(title: "총 지출", value: totalExpense, color: .red, prefix: "-")
@@ -191,11 +173,10 @@ struct GoalProgressBar: View {
         .padding(18).background(Color.white).cornerRadius(22)
     }
     
-    // 재사용 가능한 컬럼 뷰
     func summaryColumn(title: String, value: Int, color: Color, prefix: String, isBold: Bool = false) -> some View {
         VStack(spacing: 2) {
             Text(title).font(.system(size: 9, weight: .bold)).foregroundColor(.secondary)
-            Text("\(prefix)\(formatCurrency(abs(value)))") // abs로 절대값 처리해서 기호 중복 방지
+            Text("\(prefix)\(formatCurrency(abs(value)))") 
                 .font(.system(size: isBold ? 12 : 11, weight: isBold ? .black : .bold))
                 .foregroundColor(color)
         }
@@ -207,13 +188,11 @@ struct GoalProgressBar: View {
         return (f.string(from: NSNumber(value: v)) ?? "\(v)") + "원"
     }
 }
-// --- [6. 캘린더 뷰] ---
 
 struct NotionCalendarView: View {
     @EnvironmentObject var settings: SettingsManager
     let items: [LedgerItem]
     
-    // 🌟 수입 - 지출 (순수익) 계산 로직으로 수정
     func totalForDay(date: Date) -> Int {
         items.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
              .reduce(0) { $0 + ($1.isExpense ? -$1.amount : $1.amount) }
@@ -248,7 +227,7 @@ struct NotionCalendarView: View {
                             let isToday = Calendar.current.isDateInToday(date)
                             
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(isToday ? settings.themeColor : Color.softGray.opacity(0.5)) // ✅ 테마색 연동
+                                .fill(isToday ? settings.themeColor : Color.softGray.opacity(0.5)) 
                             
                             VStack(spacing: 2) {
                                 Text("\(Calendar.current.component(.day, from: date))")
@@ -256,8 +235,7 @@ struct NotionCalendarView: View {
                                     .foregroundColor(isToday ? .white : .primary)
                                 
                                 if dayTotal != 0 {
-                                    // 🌟 수입은 테마색(또는 파랑), 지출은 빨강
-                                    Text(formatCurrency(abs(dayTotal))) // 절대값 표시
+                                    Text(formatCurrency(abs(dayTotal))) 
                                         .font(.system(size: 6, weight: .black))
                                         .minimumScaleFactor(0.5)
                                         .lineLimit(1)
@@ -285,12 +263,11 @@ struct NotionCalendarView: View {
     }
 }
 
-// --- [7. 메인 장부 뷰] ---
 
 struct LedgerView: View {
     @State private var items: [LedgerItem] = []
     @State private var showingAdd = false
-    @State private var editingItem: LedgerItem? = nil // 🌟 수정을 위해 선택된 아이템
+    @State private var editingItem: LedgerItem? = nil 
     @State private var viewMode = 0
     @EnvironmentObject var settings: SettingsManager
 
@@ -320,7 +297,6 @@ struct LedgerView: View {
                 Color.softGray.ignoresSafeArea()
                 
                 VStack(spacing: 12) {
-                    // 상단 헤더
                     HStack(spacing: 12) {
                         Text(settings.profileEmoji)
                             .font(.system(size: 30))
@@ -358,12 +334,10 @@ struct LedgerView: View {
                                     Text("기록이 없습니다.").font(.caption).foregroundColor(.secondary)
                                 } else {
                                     ForEach(filteredItems) { item in
-                                        // 🌟 버튼으로 만들어 탭하면 editingItem에 할당
                                         Button(action: { editingItem = item }) {
                                             HStack {
                                                 Image(systemName: channelIcon(channel: item.channel, isExpense: item.isExpense))
                                                     .font(.system(size: 16, weight: .bold))
-                                                    // 🌟 지출이면 빨간색, 수입이면 준성님의 테마색(민트 등)
                                                     .foregroundColor(item.isExpense ? .red : settings.themeColor)
                                                     .frame(width: 35, height: 35)
                                                     .background(item.isExpense ? Color.red.opacity(0.1) : settings.themeColor.opacity(0.1))
@@ -392,7 +366,6 @@ struct LedgerView: View {
                     }
                 }
 
-                // 하단 플러스 버튼
                 VStack {
                     Spacer()
                     Button(action: { showingAdd = true }) {
@@ -408,11 +381,9 @@ struct LedgerView: View {
                 }
             }
             .navigationBarHidden(true)
-            // 🌟 새 항목 추가 시트
             .sheet(isPresented: $showingAdd) {
                 AddLedgerSheet(items: $items, save: saveToStorage)
             }
-            // 🌟 항목 수정 시트 (아이템이 선택되면 뜸)
             .sheet(item: $editingItem) { item in
                 AddLedgerSheet(items: $items, editingItem: item, save: saveToStorage)
             }
@@ -420,14 +391,11 @@ struct LedgerView: View {
         }
     }
 
-    // --- 헬퍼 함수들 ---
     func channelIcon(channel: String, isExpense: Bool) -> String {
         if isExpense {
-            // 🌟 지출은 무조건 달러 서클 아이콘!
             return "dollarsign.circle.fill"
         }
         
-        // 수입은 채널별로 다르게
         switch channel {
         case "디스코드": return "person.2.wave.2.fill"
         case "텔레그램": return "paperplane.fill"
@@ -457,7 +425,6 @@ struct LedgerView: View {
     }
 }
 
-// 통계용 구조체
 
 
 
@@ -466,23 +433,18 @@ struct WorkAnalysisContentView: View {
     @EnvironmentObject var settings: SettingsManager
     let items: [LedgerItem]
     
-    // 1. 수입 항목만 필터링
     var incomeItems: [LedgerItem] {
         items.filter { !$0.isExpense }
     }
     
-    // 2. 가성비 분석 로직 (채널별 분류)
     var categoryStats: [CategoryStat] {
-        // 🌟 "미분류" 대신 아이템의 channel(디스코드, 텔레그램 등)을 기준으로 그룹핑합니다.
         let grouped = Dictionary(grouping: incomeItems) { $0.channel }
         
         return grouped.map { (key, value) in
             let totalAmount = value.reduce(0) { $0 + $1.amount }
             
-            // 🌟 저장된 workHours를 모두 합산 (옵셔널이면 0으로 처리)
             let totalHours = value.reduce(0.0) { $0 + ($1.workHours ?? 0.0) }
             
-            // 시급 계산 (금액 / 시간)
             let avgRate = totalHours > 0 ? Int(Double(totalAmount) / totalHours) : 0
             
             return CategoryStat(
@@ -491,17 +453,15 @@ struct WorkAnalysisContentView: View {
                 avgHourlyRate: avgRate,
                 count: value.count
             )
-        }.sorted { $0.avgHourlyRate > $1.avgHourlyRate } // 시급 높은 순 정렬
+        }.sorted { $0.avgHourlyRate > $1.avgHourlyRate } 
     }
 
-    // 전체 평균 시급 계산
     var overallAvgRate: Int {
         let totalAmount = incomeItems.reduce(0) { $0 + $1.amount }
         let totalHours = incomeItems.reduce(0.0) { $0 + ($1.workHours ?? 0.0) }
         return totalHours > 0 ? Int(Double(totalAmount) / totalHours) : 0
     }
 
-    // AI 전략 제안 문구
     var strategyComment: String {
         guard let best = categoryStats.first, let worst = categoryStats.last, categoryStats.count > 1 else {
             return "데이터가 더 쌓이면 \(settings.userName)님만을 위한 가성비 전략을 제안해드릴게요! 📈"
@@ -511,7 +471,6 @@ struct WorkAnalysisContentView: View {
 
     var body: some View {
         List {
-            // 상단 요약 섹션
             Section(header: Text("전체 효율 리포트").font(.caption.bold())) {
                 HStack {
                     VStack(alignment: .leading) {
@@ -529,7 +488,6 @@ struct WorkAnalysisContentView: View {
                 .padding(.vertical, 10)
             }
 
-            // 작업 종류별 순위
             Section(header: Text("작업 종류별 가성비 순위").font(.caption.bold())) {
                 if categoryStats.isEmpty {
                     Text("수입 기록이 부족합니다.").font(.caption).foregroundColor(.secondary)
@@ -557,7 +515,6 @@ struct WorkAnalysisContentView: View {
                 }
             }
 
-            // AI 전략 제안 섹션
             Section(header: Text("AI 전략 제안").font(.caption.bold())) {
                 VStack(alignment: .leading, spacing: 8) {
                     Label("수익성 분석 리포트", systemImage: "lightbulb.fill")
@@ -576,12 +533,11 @@ struct WorkAnalysisContentView: View {
         .scrollContentBackground(.hidden)
     }
 
-    // 시급에 따른 색상 정의
     func colorForRate(_ rate: Int) -> Color {
-        if rate >= 50000 { return .green }      // 고수익
-        if rate >= 25000 { return settings.themeColor } // 보통 이상
-        if rate >= 10000 { return .orange }     // 조금 낮음
-        return .red                             // 효율 낮음
+        if rate >= 50000 { return .green }      
+        if rate >= 25000 { return settings.themeColor } 
+        if rate >= 10000 { return .orange }    
+        return .red                            
     }
     
     func formatCurrency(_ amount: Int) -> String {
@@ -591,15 +547,13 @@ struct WorkAnalysisContentView: View {
     }
 }
 
-// 데이터 모델 (이미 선언되어 있다면 생략 가능하지만, 안전하게 확인하세요)
 
 
 
-// --- [8. 입력 시트] ---
-// --- [8. 입력 시트 수정본] ---
+
 struct AddLedgerSheet: View {
     @Binding var items: [LedgerItem]
-    var editingItem: LedgerItem? = nil // 수정 시 데이터 전달받음
+    var editingItem: LedgerItem? = nil 
     var save: () -> Void
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var settings: SettingsManager
@@ -609,7 +563,7 @@ struct AddLedgerSheet: View {
     @State private var channel = "디스코드"
     @State private var date = Date()
     @State private var isExpense = false
-    @State private var workHours = "" // 작업 시간 입력용
+    @State private var workHours = "" 
 
     var body: some View {
         NavigationView {
@@ -662,8 +616,7 @@ struct AddLedgerSheet: View {
                                 items[index].isExpense = isExpense
                             }
                         } else {
-                            // --- [추가 모드] ---
-                            // 순서 에러 해결: LedgerItem 구조체 정의 순서(workHours -> isExpense) 엄수
+
                             let newItem = LedgerItem(
                                 title: title,
                                 channel: channel,
@@ -683,14 +636,12 @@ struct AddLedgerSheet: View {
                 .disabled(title.isEmpty || amount.isEmpty)
             )
             .onAppear {
-                // 수정 시 기존 데이터를 화면에 로드
                 if let item = editingItem {
                     title = item.title
                     amount = String(item.amount)
                     channel = item.channel
                     date = item.date
                     isExpense = item.isExpense
-                    // Double? 옵셔널 값을 안전하게 String으로 변환
                     if let h = item.workHours, h > 0 {
                         workHours = String(h)
                     } else {
@@ -702,10 +653,7 @@ struct AddLedgerSheet: View {
     }
 }
 
-// --- [9. 설정 뷰 (입력 개선)] ---
 
-// --- [업그레이드된 설정 뷰] ---
-// --- [완성형 설정 뷰: 시인성 강화 & 키보드 제어] ---
 
 struct ProfileView: View {
     @EnvironmentObject var settings: SettingsManager
@@ -727,10 +675,8 @@ struct ProfileView: View {
                     .onTapGesture { focusedField = nil }
 
                 Form {
-                    // --- [0. 이모지 프로필 섹션] ---
                     Section {
                         VStack(spacing: 20) {
-                            // 현재 선택된 이모지 크게 보기
                             ZStack {
                                 Circle()
                                     .fill(Color.mintBackground.opacity(0.2))
@@ -741,13 +687,12 @@ struct ProfileView: View {
                             }
                             .padding(.top, 10)
 
-                            // 이모지 선택 리스트 (가로 스크롤 가능)
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 15) {
                                     ForEach(emojis, id: \.self) { emoji in
                                         Button(action: {
                                             settings.saveEmoji(emoji)
-                                            UISelectionFeedbackGenerator().selectionChanged() // 쫀득한 진동
+                                            UISelectionFeedbackGenerator().selectionChanged()
                                         }) {
                                             Text(emoji)
                                                 .font(.system(size: 30))
@@ -764,7 +709,6 @@ struct ProfileView: View {
                         .listRowBackground(Color.clear)
                     }
 
-                    // --- [1. 수익 목표 섹션] ---
                     Section(header: Text("수익 목표")) {
                         VStack(spacing: 15) {
                             Text("이번 달 목표 수익").font(.subheadline).foregroundColor(.secondary)
@@ -781,7 +725,6 @@ struct ProfileView: View {
                         .padding(.vertical, 10)
                     }
 
-                    // --- [2. 상세 정보 및 계좌 관리] ---
                     Section(header: Text("상세 정보").font(.caption.bold())) {
                         HStack {
                             Label("이름", systemImage: "person.fill").foregroundColor(.secondary)
@@ -826,7 +769,6 @@ struct ProfileView: View {
                         }
                     }
                     
-                    // --- [3. 앱 동작 설정] ---
                     Section(header: Text("앱 동작 설정").font(.caption.bold())) {
                         Picker("애니메이션", selection: Binding(
                             get: { settings.animationType },
@@ -841,7 +783,6 @@ struct ProfileView: View {
                 }
                 .navigationTitle("내 프로필")
 
-                // 복사 완료 토스트
                 if showCopyToast {
                     toastOverlay
                 }
