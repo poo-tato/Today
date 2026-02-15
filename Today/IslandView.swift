@@ -4,33 +4,28 @@ struct IslandView: View {
     @EnvironmentObject var settings: SettingsManager
     @State private var items: [LedgerItem] = []
     
-    // 🌟 [핵심 로직] 수입은 더하고, 지출은 빼서 '진짜 순수익'을 계산 (전체 소스 반영)
     var currentMonthTotal: Int {
         items.filter { Calendar.current.isDate($0.date, equalTo: Date(), toGranularity: .month) }
              .reduce(0) { $0 + ($1.isExpense ? -$1.amount : $1.amount) }
     }
     
-    // 섬 레벨: 순수익 기반 (적자일 때는 레벨 0)
     var islandLevel: Int { min(max(currentMonthTotal / 500000, 0), 100) }
     var nextLevelGoal: Int { (islandLevel + 1) * 500000 }
     
-    // 경험치 바 계산
     var levelProgress: Double {
         if islandLevel >= 100 { return 1.0 }
-        if currentMonthTotal < 0 { return 0.0 } // 적자 시 0% 고정
+        if currentMonthTotal < 0 { return 0.0 }
         
         let currentLevelRemainder = currentMonthTotal % 500000
         return Double(currentLevelRemainder) / 500000.0
     }
 
     var body: some View {
-        // 전체 배경 및 구성
         ZStack {
             backgroundSeaGradient.ignoresSafeArea()
             backgroundDecorations
             
             VStack(spacing: 20) {
-                // 상단 레벨 및 유저 정보
                 VStack(spacing: 8) {
                     Text("LEVEL \(islandLevel)")
                         .font(.system(size: 12, weight: .black))
@@ -44,7 +39,6 @@ struct IslandView: View {
                 }
                 .padding(.top, 30)
                 
-                // 중앙 섬 디자인
                 ZStack {
                     Circle()
                         .fill((currentMonthTotal < 0 ? Color.red : settings.themeColor).opacity(0.2))
@@ -64,7 +58,6 @@ struct IslandView: View {
                 }
                 .frame(height: 280)
                 
-                // 경험치 카드 섹션
                 VStack(spacing: 15) {
                     HStack {
                         Text(currentMonthTotal < 0 ? "적자 경보 🚨" : "정산 경험치")
@@ -115,7 +108,6 @@ struct IslandView: View {
         .onAppear(perform: loadData)
     }
 
-    // --- 도움말 및 계산 함수들 ---
     
     var backgroundSeaGradient: LinearGradient {
         let baseColor = currentMonthTotal < 0 ? Color.red : settings.themeColor
