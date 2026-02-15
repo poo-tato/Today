@@ -8,7 +8,7 @@
 
 | 메인 화면 | 가성비 분석 | 내 섬 (보상) | 설정 |
 | :---: | :---: | :---: | :---: |
-| <img src="https://media.discordapp.net/attachments/1471773620488638508/1472558673132785747/IMG_0301.png" width="200"> | <img src="https://media.discordapp.net/attachments/1471773620488638508/1472558673481039913/IMG_0302.png" width="200"> | <img src="https://media.discordapp.net/attachments/1471773620488638508/1472558673799811163/IMG_0303.png" width="200"> | <img src="https://media.discordapp.net/attachments/1471773620488638508/1472558674105864426/IMG_0304.png" width="200"> |
+| <img src="https://media.discordapp.net/attachments/1471773620488638508/1472558673132785747/IMG_0301.png?ex=699302a2&is=6991b122&hm=689302dc02b89d9e35a7c830ca6104c099c1077736d329703cbf38ec0da5686c&=&format=webp&quality=lossless&width=636&height=1378" width="200"> | <img src="https://media.discordapp.net/attachments/1471773620488638508/1472558673481039913/IMG_0302.png?ex=699302a2&is=6991b122&hm=27b2aa767b1415e76c4d6f915c69a599dcdc28275906515fba8f78121ad3e04c&=&format=webp&quality=lossless&width=636&height=1378" width="200"> | <img src="https://media.discordapp.net/attachments/1471773620488638508/1472558673799811163/IMG_0303.png?ex=699302a2&is=6991b122&hm=112e26c1d6f688515de9eac47293f440db6c13a50369eed2532e2269dd6d8893&=&format=webp&quality=lossless&width=636&height=1378" width="200"> | <img src="https://media.discordapp.net/attachments/1471773620488638508/1472558674105864426/IMG_0304.png?ex=699302a2&is=6991b122&hm=2b134e0fc011e16d4d564e2e0b242ac62e4134a628ce88a942d24bdbf4b068f5&=&format=webp&quality=lossless&width=636&height=1378" width="200"> |
 
 ---
 
