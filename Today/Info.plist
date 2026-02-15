@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSFaceIDUsageDescription</key>
+	<string>장부 데이터 보호를 위해 Face ID를 사용합니다.</string>
+	<key>PrivaPrivacy - Photo Library Additions Usage Description</key>
+	<string>견적서를 사진첩에 저장하기 위해 권한이 필요합니다.</string>
+</dict>
+</plist>
